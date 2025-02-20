@@ -28,7 +28,4 @@ app.get('/', (req: Request, res: Response) => {
   res.send('API Running with Auth0 Authentication');
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 export default app;

@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest --coverage",
-    "test:watch": "jest --coverage --watch",
+    "test": "jest --forceExit",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:detect": "jest --detectOpenHandles",
+    "test:debug": "node --inspect-brk ./node_modules/.bin/jest --runInBand",
     "dev": "ts-node src/index.ts",
     "lint": "npx eslint",
     "lint:fix": "npx eslint --fix",
