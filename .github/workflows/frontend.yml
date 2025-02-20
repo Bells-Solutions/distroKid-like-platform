@@ -1,0 +1,39 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm install
+        working-directory: frontend
+
+      - name: Run Linter
+        run: npm run lint
+        working-directory: frontend
+
+      - name: Run Tests
+        run: npm run test
+        working-directory: frontend
+
+      - name: Build Project
+        run: npm run build
+        working-directory: frontend
