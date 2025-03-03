@@ -12,7 +12,14 @@ app.use(
   createAuth0({
     domain: import.meta.env.VITE_AUTH0_DOMAIN as string,
     clientId: import.meta.env.VITE_AUTH0_CLIENT_ID as string,
-    authorizationParams: { redirect_uri: window.location.origin },
+    cacheLocation: 'localstorage',
+    useRefreshTokens: true,
+    useRefreshTokensFallback: true,
+    authorizationParams: {
+      audience: import.meta.env.VITE_AUTH0_AUDIENCE,
+      // scope: 'openid profile email offline_access',
+      redirect_uri: window.location.origin,
+    },
   })
 );
 
