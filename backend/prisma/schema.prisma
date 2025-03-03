@@ -1,9 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Updated Prisma Schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// Prisma Client Generator
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,62 +10,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// User Model
+// Updated User Model with Self-Reference for Referrals
 model User {
-  id         String      @id @default(uuid())
-  email      String      @unique
-  password   String
-  role       Role        @default(USER)
-  createdAt  DateTime    @default(now())
+  id            String      @id @default(uuid())
+  email         String      @unique
+  password      String
+  role          Role        @default(USER)
+  createdAt     DateTime    @default(now())
 
-  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
-  subscriptionId String? @unique
-
-  referrals     Referral[] @relation(name: "UserReferrals")
-  referredBy   Referral[] @relation(name: "UserReferred")
+  subscription  Subscription[]
+  referralsSent Referral[]  @relation(name: "UserReferrals")
+  referralsGot  Referral[]  @relation(name: "UserReferred")
 
   transactions  Transaction[]
-  stats        UserStats?
+  stats         UserStats?
+
+  withdrawals   Withdrawal[]  
+
+  referralCode  String?     @unique
+  referredById  String?     // Stores the ID of the referrer
+  referredBy    User?       @relation("UserReferrer", fields: [referredById], references: [id]) // ✅ Self-reference
+  referrals     User[]      @relation("UserReferrer") // ✅ Opposite side of self-reference
+
+  @@index([email]) 
 }
 
+
+// Subscription Model
 model Subscription {
-  id         String    @id @default(uuid())
+  id         String            @id @default(uuid())
   type       SubscriptionType
   price      Float
-  user       User?
-  createdAt  DateTime  @default(now())
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  createdAt  DateTime          @default(now())
   expiresAt  DateTime
+
+  @@index([userId])
 }
 
+// Transaction Model
 model Transaction {
-  id         String    @id @default(uuid())
-  user       User      @relation(fields: [userId], references: [id])
+  id         String          @id @default(uuid())
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   amount     Float
   type       TransactionType
-  createdAt  DateTime  @default(now())
+  source     RevenueSource?   
+  createdAt  DateTime        @default(now())
+
+  @@index([userId])
 }
 
+// Referral Model
 model Referral {
-  id         String  @id @default(uuid())
+  id          String    @id @default(uuid())
 
-  referrer   User    @relation(name: "UserReferrals", fields: [referrerId], references: [id])
-  referrerId String
+  referrer    User      @relation(name: "UserReferrals", fields: [referrerId], references: [id], onDelete: Cascade)
+  referrerId  String
 
-  referred   User    @relation(name: "UserReferred", fields: [referredId], references: [id])
-  referredId String
+  referred    User      @relation(name: "UserReferred", fields: [referredId], references: [id], onDelete: Cascade)
+  referredId  String
 
-  createdAt  DateTime @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([referrerId])
+  @@index([referredId])
 }
 
+// User Statistics Model
 model UserStats {
-  id        String    @id @default(uuid())
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String    @unique
-  earnings  Float     @default(0.0)
-  referrals Int       @default(0)
-  createdAt DateTime  @default(now())
+  id         String    @id @default(uuid())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String    @unique
+  earnings   Float     @default(0.0)
+  referrals  Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([userId])
 }
 
+// Withdrawal Model
+model Withdrawal {
+  id          String         @id @default(uuid())
+  user        User           @relation(fields: [userId], references: [id])
+  userId      String
+  amount      Float
+  method      WithdrawalMethod
+  status      WithdrawalStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+}
+
+// Enums for Role, Subscription, Transaction Types
 enum Role {
   USER
   ADMIN
@@ -84,4 +118,25 @@ enum TransactionType {
   DEPOSIT
   WITHDRAWAL
   REVENUE_SHARE
+  FEE
+  PURCHASE
+}
+
+enum RevenueSource {
+  REFERRAL
+  SALE
+  BONUS
+  OTHER
+}
+
+enum WithdrawalMethod {
+  VISA
+  BANK_TRANSFER
+  PAYPAL
+}
+
+enum WithdrawalStatus {
+  PENDING
+  COMPLETED
+  FAILED
 }
