@@ -1,5 +1,3 @@
-// src/utils/getUserFromToken.ts
-
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient, Role, User } from '@prisma/client';
@@ -9,7 +7,7 @@ const prisma = new PrismaClient();
 
 interface JwtPayload {
   sub: string; // Auth0 user ID
-  email: string;
+  custom_email_claim?: string; // Custom email field
   role?: Role;
 }
 
@@ -32,10 +30,7 @@ const getKey = (header: any, callback: any) => {
 export const getUserFromToken = async (req: Request): Promise<User> => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
-
-    if (!token) {
-      throw new Error('Token not provided');
-    }
+    if (!token) throw new Error('Token not provided');
 
     const decoded = await new Promise<JwtPayload>((resolve, reject) => {
       jwt.verify(
@@ -52,15 +47,26 @@ export const getUserFromToken = async (req: Request): Promise<User> => {
       );
     });
 
-    // Retrieve the user from the database
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.sub },
-    });
+    console.log('Decoded JWT Payload:', decoded);
 
-    if (!user) {
-      throw new Error('User not found');
+    // Validate essential fields
+    if (!decoded.sub || !decoded.custom_email_claim) {
+      throw new Error('Missing required fields in JWT');
     }
 
+    // Find or create user using upsert
+    const user = await prisma.user.upsert({
+      where: { id: decoded.sub },
+      update: {}, // If the user exists, no fields are updated for now.
+      create: {
+        id: decoded.sub,
+        email: decoded.custom_email_claim,
+        role: Role.USER,
+        password: 'defaultPassword', // Consider handling this securely later
+      },
+    });
+
+    console.log('User found or created:', user);
     return user;
   } catch (error) {
     console.error('Error extracting user from token:', error);
