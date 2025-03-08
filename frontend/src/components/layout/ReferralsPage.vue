@@ -38,7 +38,7 @@ const copyReferralLink = async () => {
     await navigator.clipboard.writeText(referralLink.value);
     alert('Referral link copied to clipboard!');
   } catch (error) {
-    alert('Failed to copy referral link.');
+    console.log('Failed to copy referral link.', error);
   }
 };
 </script>
