@@ -5,7 +5,7 @@ export type Column = {
   sortable?: boolean;
   sortMethod?: (a: Item, b: Item) => number;
 };
-export type Item = any;
+export type Item = Record<string, unknown>;
 export type SortDirection = 'ascending' | 'descending';
 </script>
 
@@ -51,6 +51,7 @@ const emit = defineEmits([
 
 function getField(item: Item, columnKey: string) {
   const segments = columnKey.split('.');
+  // @ts-expect-error - This is fine
   return segments.reduce((obj, key) => obj[key], item);
 }
 
