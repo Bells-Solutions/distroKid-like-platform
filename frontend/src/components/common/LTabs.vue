@@ -71,6 +71,7 @@ const id = useId().toString();
       </div>
     </div>
     <div>
+      <!--@vue-expect-error -->
       <slot :name="`tab-${index + 1}`" v-for="(tab, index) in tabs" />
     </div>
   </div>

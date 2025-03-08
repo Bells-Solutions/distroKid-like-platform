@@ -70,6 +70,7 @@ const routes = [
 
 export const router = createRouter({
   history: createWebHistory(),
+  // @ts-expect-error - to, from, and savedPosition are not available in the test environment
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition;
@@ -80,6 +81,7 @@ export const router = createRouter({
   routes,
 });
 
+// @ts-expect-error - nextTick is not available in the test environment
 router.afterEach((to, from, failure) => {
   if (failure) return;
 
