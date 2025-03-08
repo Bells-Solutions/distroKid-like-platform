@@ -40,12 +40,13 @@ model User {
 // Subscription Model
 model Subscription {
   id         String            @id @default(uuid())
-  type       SubscriptionType
+  type       SubscriptionType  @default(FREE)
   price      Float
   user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   createdAt  DateTime          @default(now())
   expiresAt  DateTime
+  stripeSubscriptionId String  @default("price_1LQJvqJ7w5h0nL9gq2Xw1X1Q")
 
   @@index([userId])
 }

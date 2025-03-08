@@ -8,6 +8,17 @@ import { getUserFromToken } from '../utils/getUserFromToken';
 const router = Router();
 const prisma = new PrismaClient();
 
+// get profile infos
+router.get('/profile', checkJwt, async (req: Request, res: Response) => {
+  try {
+    const user = await getUserFromToken(req);
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // 🟢 Get All Users (Admin only)
 router.get(
   '/',
@@ -37,6 +48,13 @@ router.get(
 router.post('/', checkJwt, async (req: Request, res: Response) => {
   try {
     const { email, password, role = Role.USER } = req.body;
+
+    // check if the user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      res.status(400).json({ error: 'User already exists' });
+      return;
+    }
 
     const newUser = await prisma.user.create({
       data: {
