@@ -81,7 +81,7 @@ describe('LTable', () => {
   });
 
   it('can paginate the items', async () => {
-    const wrapper: any = mount(LTable, {
+    const wrapper = mount(LTable, {
       props: {
         columns,
         items,
