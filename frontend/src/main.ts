@@ -17,7 +17,7 @@ app.use(
     useRefreshTokensFallback: true,
     authorizationParams: {
       audience: import.meta.env.VITE_AUTH0_AUDIENCE,
-      // scope: 'openid profile email offline_access',
+      scope: 'openid profile email offline_access',
       redirect_uri: window.location.origin,
     },
   })
